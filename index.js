@@ -8,8 +8,8 @@ const app = express();
 
 
 app.listen(process.env.PORT , () => {
-    console.log("Server is running on the port number ");
-    connectionWithDB("mongodb://localhost:27017/")
+    console.log("Server is running on the port number : " , process.env.PORT);
+    connectionWithDB(process.env.MONGO_URI);
 })
 
 

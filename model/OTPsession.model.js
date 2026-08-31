@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 
-const session = mongoose.Schema({
+const OTPsession = mongoose.Schema({
     email : {
         type : String,
         required : true,
@@ -19,4 +19,4 @@ const session = mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('session' , session);
+module.exports = mongoose.model('OTPsession' , OTPsession);

@@ -1,25 +1,34 @@
 const mailer = require('../config/nodemailer.config.js');
 const optSession = require('../model/OTPsession.model.js');
+const sessionModel = require('../model/session.model.js');
 const user = require("../model/user");
+const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const signUp = async ( req , res ) => {
-    const { firstName , lastName , profile , email , password , role } = req.body;
-    if(!firstName || !profile || !email || !password || !role){
+    const { firstName , lastName , email , password , role } = req.body;
+    const file = req.file;
+    console.log("The file in the sign up is : " , file);
+    
+    if(!firstName || !file || !email || !password || !role){
         return res.status(400).json({
             message : "Incomplete information"
         })
     }
-    const userExist = user.findOne({ email : email });
-    if(userExist){
-        return res.status(400).json({ message : "User with this gmail already exist" })
-    }
+    const profile = path.join(process.cwd() , "/public" , `/${req.body.email}`)
     const newUser = await user.create({
         firstName : firstName,
         lastName : lastName || "",
         email : email,
         password : password,
-        role : role
+        role : role,
+        profile : profile
     })
+    console.log("The result of the new user is : " , newUser);
+    return res.json({
+        message : "Successful"
+    })
+    
 }
 
 const generateOTP = async ( req , res ) => {
@@ -54,11 +63,14 @@ const verifyOTP = async ( req , res ) => {
     if(!email || !otp) return res.json({ message : "Incomplete cridentials" });
     const data = await optSession.findOne({ email , otp })
     console.log("THe data in the verfy otp is : " , data);
-    if(!data){
+    if(!data || data == null){
         return res.json({
             message : "Invalid OTP"
         })
     }
+    console.log("THe data we get from the varify otp is : " , data);
+    await optSession.deleteOne({ email : email });
+    console.log("THe data we get from the varify otp after deletion is : " , await optSession.findOne({ email : email }));
     return res.json({
         message : "Successful"
     })
@@ -70,5 +82,29 @@ const verifyOTP = async ( req , res ) => {
     }
 } 
 
+const login = async ( req , res ) => {
+    const { email , password } = req.query;
+    const userExist = await user.findOne({ email : email , password : password });
+    console.log("The value of the user ezxdt in the login is : " , userExist);
+    if(!userExist || userExist== null) return res.json({message :"Unauthorizeed user" })
+    const loginCokkie = jwt.sign({
+        email : userExist.email,
+        role : userExist.role
+    },process.env.JWT_KEY)
+    res.cookie('login' , loginCokkie , {
+        httpOnly : true,
+        maxAge: 60 * 15 * 1000
+    })
+    await sessionModel.create({
+        email : email
+    })
+    return res.json({
+        message : "Successful"
+    })
+}
 
-module.exports = { signUp , generateOTP , verifyOTP}
+const profile = ( req , res ) => {
+    return res.json({ message : "Successful" })
+}
+
+module.exports = { signUp , generateOTP , verifyOTP , login , profile}

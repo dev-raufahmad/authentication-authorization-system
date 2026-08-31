@@ -22,6 +22,10 @@ const user = mongoose.Schema({
         type : String,
         required : true,
         enum : [ "student" , "admin" , "manager" ]
+    },
+    profile : {
+        type : String,
+        required : true
     }
 })
 
