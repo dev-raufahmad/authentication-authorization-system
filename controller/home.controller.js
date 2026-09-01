@@ -124,4 +124,8 @@ const profile = ( req , res ) => {
     return res.json({ message : "We got accesss to the profile" })
 }
 
-module.exports = { signUp , generateOTP , verifyOTP , login , profile}
+const deleteStudent = ( req ,res ) => {
+    return res.json({ message : "Student has been deleted" })
+}
+
+module.exports = { deleteStudent , signUp , generateOTP , verifyOTP , login , profile}

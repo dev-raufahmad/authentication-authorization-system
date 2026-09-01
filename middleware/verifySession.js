@@ -8,24 +8,24 @@ const verifySession = async ( req , res , next ) => {
         const cookies = req.cookies;
     if(cookies == null) return res.json({ message : "Unauthorized user" })
     if(cookies.login){
-        jwt.verify(cookies.login , process.env.JWT_KEY);
+        const decode = jwt.verify(cookies.login , process.env.JWT_KEY);
+        req.user = decode;
         return next();
     }
-    console.log("Ther was no login token");
     if(!(cookies.sessionToken)) return res.json({ message : "Unauthorized user" })
-    console.log("The cookies are : " , req.cookies);
     const database = await session.findOne({ sessionToken : cookies.sessionToken });
-    console.log("THe result of the finding of the seesion is : " , database);
     if(database == null) return res.json({ message : "Unauthorized user" });
     const token = jwt.sign({
         email : database.email,
         role : database.role
     } , process.env.JWT_KEY);
+    req.user = {email : database.email,
+        role : database.role}
     res.cookie('login' , token)
     return next();
     } catch (error) {
         console.log("Here is the error in the verify session named middleware and the error is : " , error);
-        
+        return res.json({ message : "Unauthorized user" })
     }
 }
 
