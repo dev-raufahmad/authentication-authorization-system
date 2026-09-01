@@ -4,6 +4,7 @@ const sessionModel = require('../model/session.model.js');
 const user = require("../model/user");
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto')
 
 const signUp = async ( req , res ) => {
     const { firstName , lastName , email , password , role } = req.body;
@@ -83,10 +84,14 @@ const verifyOTP = async ( req , res ) => {
 } 
 
 const login = async ( req , res ) => {
+    try {
+        console.log("We have entered the login route");
+    
     const { email , password } = req.query;
     const userExist = await user.findOne({ email : email , password : password });
     console.log("The value of the user ezxdt in the login is : " , userExist);
-    if(!userExist || userExist== null) return res.json({message :"Unauthorizeed user" })
+    if(userExist== null) return res.json({message :"Unauthorizeed user" })
+    const seesionToken = crypto.randomBytes(64).toString('hex');
     const loginCokkie = jwt.sign({
         email : userExist.email,
         role : userExist.role
@@ -95,16 +100,28 @@ const login = async ( req , res ) => {
         httpOnly : true,
         maxAge: 60 * 15 * 1000
     })
+    console.log("We are just before the seesion model");
+    await sessionModel.deleteOne({ email : email })
     await sessionModel.create({
-        email : email
+        email : email,
+        sessionToken : seesionToken,
+        role : userExist.role
+    })
+    res.cookie('sessionToken' , seesionToken , {
+        httpOnly : true,
+        maxAge : 1000 * 60 * 60 * 24 * 7
     })
     return res.json({
         message : "Successful"
     })
+    } catch (error) {
+        console.log("THere is error in the login function and the error is : \n" , error);
+        return res.json({ message : "Can't login" })
+    }
 }
 
 const profile = ( req , res ) => {
-    return res.json({ message : "Successful" })
+    return res.json({ message : "We got accesss to the profile" })
 }
 
 module.exports = { signUp , generateOTP , verifyOTP , login , profile}

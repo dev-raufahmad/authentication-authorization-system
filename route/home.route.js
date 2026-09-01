@@ -8,7 +8,7 @@ const router = express.Router();
 // router.get('/login', )
 router.get('/generate-otp' , generateOTP )
 router.get('/verify-otp' , verifyOTP)
-router.post('/sign-up' , userAlreadyExist ,upload.single('profile') , signUp)
+router.post('/sign-up' ,upload.single('profile') ,  userAlreadyExist ,signUp)
 router.get('/login' , login);
-router.get('/profile' , profile );
+router.get('/profile' ,require('../middleware/verifySession.js'), profile );
 module.exports = router;

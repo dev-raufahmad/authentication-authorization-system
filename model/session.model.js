@@ -6,6 +6,14 @@ const session = mongoose.Schema({
         required : true,
         unique : true
     },
+    sessionToken : {
+        type : String,
+        required : true
+    },
+    role : {
+        type : String,
+        required :true
+    },
     expiry : {
         type : Date,
         default : Date.now,
